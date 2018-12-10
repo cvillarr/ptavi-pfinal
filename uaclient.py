@@ -77,19 +77,25 @@ if __name__ == "__main__":
     PORT = listafinal[1][1]["puerto"]
     SERVER = listafinal[1][1]["ip"]
     USUARIO = listafinal[0][1]["username"]
+    PORT_AUDIO = listafinal [2][1]["puerto"]
  
     if METODO == "REGISTER":
         LINE = (METODO + ' sip:' + USUARIO + ' SIP/2.0\r\n' + 'Expires:'
                 + OPCION + '\r\n')
-        print(LINE)
+    elif METODO == "INVITE":
+        LINE = (METODO + ' sip:' + OPCION + ' SIP/2.0\r\n'+ 
+                'Content-Type: application/sdp\r\n\r\n' + 'v=0\r\n' + 'o=' +
+                USUARIO + ' ' + SERVER + '\r\n' + 's=Misesion\r\n' + 't=0\r\n' +
+                'm=audio ' + PORT_AUDIO + ' RTP\r\n')
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
     my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     my_socket.connect((SERVER, int(PORT)))
     my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
+    print("Enviando: " + LINE)
     data = my_socket.recv(1024)
     print(data.decode('utf-8'))
-    print("Enviando: " + LINE)
+
     
 """
 

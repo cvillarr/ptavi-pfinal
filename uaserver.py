@@ -16,23 +16,27 @@ class EchoHandler(socketserver.DatagramRequestHandler):
         line = self.rfile.read().decode('utf-8')
         line_conten = line.split()
         print("El cliente nos manda " + line)
-        if len(line_conten) != 4:
-            self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
-        else:
-            if line_conten[0] == "REGISTER":
+
+        if line_conten[0] == "INVITE":
+            if len(line_conten) != 13:
+                self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
+            else:
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 180 Ringing\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-            elif line_conten[0] == "ACK":
-                aEjecutar = 'mp32rtp -i 127.0.0.1 -p 23032 <' + ARCHIVO
-                print("Vamos a ejecutar", aEjecutar)
-                os.system(aEjecutar)
-            elif line_conten[0] == "BYE":
-                self.wfile.write(b"Finalizando comunicacion")
-            if line_conten[0] != "BYE":
-                if line_conten[0] != "ACK":
-                        if line_conten[0] != "INVITE":
-                            self.wfile.write(b"SIP/2.0 405 Method Not Allowed")
+        elif line_conten[0] == "REGISTER":
+            if len(line_conten) != 4:
+                self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
+        elif line_conten[0] == "ACK":
+            aEjecutar = 'mp32rtp -i 127.0.0.1 -p 23032 <' + ARCHIVO
+            print("Vamos a ejecutar", aEjecutar)
+            os.system(aEjecutar)
+        elif line_conten[0] == "BYE":
+            self.wfile.write(b"Finalizando comunicacion")
+        if line_conten[0] != "BYE":
+            if line_conten[0] != "ACK":
+                    if line_conten[0] != "INVITE":
+                        self.wfile.write(b"SIP/2.0 405 Method Not Allowed")
 
         # Si no hay más líneas salimos del bucle infinito
 
