@@ -1,0 +1,9 @@
+<config>
+    <account username="ams@urjc.com" passwd="1211"/>
+    <uaserver ip="" puerto="3333"/>
+    <rtpaudio puerto="4444"/>
+    <regproxy ip="127.0.0.1" puerto="5060"/>
+    <log path="./fich_log(ua2).txt"/>
+    <audio path="./cancion.mp3"/>
+</config>
+
