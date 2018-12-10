@@ -53,44 +53,57 @@ class ClientHandler(ContentHandler):
     def get_tags(self):
         
         return self.listafinal
-        
+
 
 
 if __name__ == "__main__":
-    
+
+    try:
+        CONFIG = sys.argv[1]
+        METODO = sys.argv[2]
+        OPCION = sys.argv[3]
+
+    except IndexError:
+        sys.exit('Usage: python3 uaclient.py config method option')
+
     archivo = sys.argv[1]
     parser = make_parser()
     cHandler = ClientHandler()
     parser.setContentHandler(cHandler)
     parser.parse(open(archivo))
     listafinal = cHandler.get_tags()
-    print(listafinal)
+    print()
+
+    PORT = listafinal[1][1]["puerto"]
+    SERVER = listafinal[1][1]["ip"]
+    USUARIO = listafinal[0][1]["username"]
+ 
+    if METODO == "REGISTER":
+        LINE = (METODO + ' sip:' + USUARIO + ' SIP/2.0\r\n' + 'Expires:'
+                + OPCION + '\r\n')
+        print(LINE)
+# Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
+with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
+    my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    my_socket.connect((SERVER, int(PORT)))
+    my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
+    data = my_socket.recv(1024)
+    print(data.decode('utf-8'))
+    print("Enviando: " + LINE)
     
-    listafinal[1][1]["puerto"]
-    listafinal[1][1]["ip"]
-    listafinal[0][1]["username"]
 """
 
-try:
-    CONFIG = sys.argv[1]
-    METODO = sys.argv[2]
-    OPCION = sys.argv[3]
+
 
     # Contenido que vamos a enviar
     LINE = (METODO + ' sip:' + USUARIO + ' SIP/2.0\r\n')
 
-except IndexError:
-    sys.exit('Usage: python3 uaclient.py config method option')
 
-# Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
-with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
-    my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    my_socket.connect((SERVER, PORT))
 
-    print("Enviando: " + LINE)
-    my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
-    data = my_socket.recv(1024)
-    print(data.decode('utf-8'))
+
+
+    
+    
     if METODO == "INVITE":
         my_socket.send(bytes("ACK sip:" + USUARIO + " SIP/2.0", "utf-8")
                        + b"\r\n")
