@@ -8,7 +8,8 @@ from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
 class ClientHandler(ContentHandler):
-    #Creamos un diccionario para cada apartado
+    #Creamos un diccionario para cada apartado y una lista para guardar cada diccionario
+
     def __init__(self):
         self.account = {"username": "", "passwd": ""}
         self.uaserver = {"ip": "", "puerto": ""}
@@ -19,39 +20,39 @@ class ClientHandler(ContentHandler):
         self.listafinal = [] 
 
     def startElement(self, name, attrs):
-        if name == 'account':
+        if name == "account":
             dicc_aux = {}
             for attr in self.account:
                 dicc_aux[attr] = attrs.get(attr, '')
             self.listafinal.append([name, dicc_aux])
-        elif name == 'uaserver':
+        elif name == "uaserver":
             dicc_aux = {}
             for attr in self.uaserver:
                 dicc_aux[attr] = attrs.get(attr, '')
             self.listafinal.append([name, dicc_aux])
-        elif name == 'rtpaudio':
+        elif name == "rtpaudio":
             dicc_aux = {}
             for attr in self.rtpaudio:
                 dicc_aux[attr] = attrs.get(attr, '')
             self.listafinal.append([name, dicc_aux])
-        elif name == 'regproxy':
+        elif name == "regproxy":
             dicc_aux = {}
             for attr in self.regproxy:
                 dicc_aux[attr] = attrs.get(attr, '')
             self.listafinal.append([name, dicc_aux])
-        elif name == 'log':
+        elif name == "log":
             dicc_aux = {}
             for attr in self.log:
                 dicc_aux[attr] = attrs.get(attr, '')
             self.listafinal.append([name, dicc_aux])
-        elif name == 'audio':
+        elif name == "audio":
             dicc_aux = {}
             for attr in self.audio:
                 dicc_aux[attr] = attrs.get(attr, '')
             self.listafinal.append([name, dicc_aux])
 
     def get_tags(self):
-        
+
         return self.listafinal
 
 
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         OPCION = sys.argv[3]
 
     except IndexError:
-        sys.exit('Usage: python3 uaclient.py config method option')
+        sys.exit("Usage: python3 uaclient.py config method option")
 
     archivo = sys.argv[1]
     parser = make_parser()
@@ -80,23 +81,25 @@ if __name__ == "__main__":
     PORT_AUDIO = listafinal [2][1]["puerto"]
  
     if METODO == "REGISTER":
-        LINE = (METODO + ' sip:' + USUARIO + ' SIP/2.0\r\n' + 'Expires:'
-                + OPCION + '\r\n')
+        LINE = (METODO + " sip:" + USUARIO + " SIP/2.0\r\n" + "Expires:"
+                + OPCION + "\r\n")
     elif METODO == "INVITE":
-        LINE = (METODO + ' sip:' + OPCION + ' SIP/2.0\r\n'+ 
-                'Content-Type: application/sdp\r\n\r\n' + 'v=0\r\n' + 'o=' +
-                USUARIO + ' ' + SERVER + '\r\n' + 's=Misesion\r\n' + 't=0\r\n' +
-                'm=audio ' + PORT_AUDIO + ' RTP\r\n')
+        LINE = (METODO + " sip:" + OPCION + " SIP/2.0\r\n"+ 
+                "Content-Type: application/sdp\r\n\r\n" + "v=0\r\n" + "o=" +
+                USUARIO + " " + SERVER + "\r\n" + "s=Misesion\r\n" + "t=0\r\n" +
+                "m=audio " + PORT_AUDIO + " RTP\r\n")
+    elif METODO == "BYE":
+        LINE = (METODO + " sip:" + USUARIO + " SIP/2.0\r\n")
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
     my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     my_socket.connect((SERVER, int(PORT)))
-    my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
+    my_socket.send(bytes(LINE, 'utf-8') + b"\r\n")
     print("Enviando: " + LINE)
     data = my_socket.recv(1024)
     print(data.decode('utf-8'))
 
-    
+
 """
 
 
