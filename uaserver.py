@@ -11,7 +11,6 @@ from xml.sax.handler import ContentHandler
 
 class ClientHandler(ContentHandler):
     #Creamos un diccionario para cada apartado y una lista para guardar cada diccionario
-
     def __init__(self):
         self.account = {"username": "", "passwd": ""}
         self.uaserver = {"ip": "", "puerto": ""}
@@ -74,11 +73,13 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             else:
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 180 Ring\r\n\r\n")
-                self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n" + 
-                                 "Content-Type: application/sdp\r\n\r\n" + 
-                                 "v=0\r\n" + "o=" + USUARIO + " " + SERVER + 
-                                 "\r\n" + "s=Misesion\r\n" + "t=0\r\n" +
-                                 "m=audio " + PORT_AUDIO + " RTP\r\n")
+                self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n"
+                                 + b"Content-Type: application/sdp\r\n\r\n" 
+                                 + b"v=0\r\n" + b"o=" 
+                                 + bytes(line_conten[6].split("=")[-1], 'utf-8') 
+                                 + b" " + bytes(SERVER, 'utf-8') + b"\r\n" 
+                                 + b"s=Misesion\r\n" + b"t=0\r\n" + b"m=audio " 
+                                 + bytes(PORT_AUDIO, 'utf-8') + b" RTP\r\n")
         elif line_conten[0] == "REGISTER":
             if len(line_conten) != 4:
                 self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
@@ -106,20 +107,18 @@ if __name__ == "__main__":
     except IndexError:
         sys.exit("Usage: python3 uaserver.py config")
 
-    archivo = sys.argv[1]
     parser = make_parser()
     cHandler = ClientHandler()
     parser.setContentHandler(cHandler)
     parser.parse(open(archivo))
     listafinal = cHandler.get_tags()
-    print()
 
     PORT = listafinal[1][1]["puerto"]
     SERVER = listafinal[1][1]["ip"]
     USUARIO = listafinal[0][1]["username"]
     PORT_AUDIO = listafinal [2][1]["puerto"]
     # Creamos servidor de eco y escuchamos
-    serv = socketserver.UDPServer(('', int(PORT), EchoHandler))
+    serv = socketserver.UDPServer(('', int(PORT)), EchoHandler)
     print("Listening...")
     serv.serve_forever()
 
