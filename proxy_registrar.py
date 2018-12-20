@@ -73,10 +73,10 @@ if __name__ == "__main__":
     listafinal = cHandler.get_tags()
     print(listafinal)
 
-    PORT = listafinal[0][1]["puerto"]
+    PORT_PROXY = listafinal[0][1]["puerto"]
     SERVER = listafinal[0][1]["name"]
     
-    serv = socketserver.UDPServer(('', int(PORT)), EchoHandler)
-    LINE = "Server " + SERVER + " listening at port" + PORT
+    serv = socketserver.UDPServer(('', int(PORT_PROXY)), EchoHandler)
+    LINE = "Server " + SERVER + " listening at port" + PORT_PROXY
     print(LINE)
     serv.serve_forever()

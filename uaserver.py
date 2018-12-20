@@ -117,8 +117,9 @@ if __name__ == "__main__":
     SERVER = listafinal[1][1]["ip"]
     USUARIO = listafinal[0][1]["username"]
     PORT_AUDIO = listafinal [2][1]["puerto"]
+    PORT_PROXY = listafinal [3][1]["puerto"]
     # Creamos servidor de eco y escuchamos
-    serv = socketserver.UDPServer(('', int(PORT)), EchoHandler)
+    serv = socketserver.UDPServer(('', int(PORT_PROXY)), EchoHandler)
     print("Listening...")
     serv.serve_forever()
 
