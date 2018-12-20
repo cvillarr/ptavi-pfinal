@@ -1,0 +1,6 @@
+<config>
+    <server name="Miservidorproxy" ip="127.0.0.1" puerto="7080"/>
+    <database path="./passwords.txt"/>
+    <database passwdpath="./passwords.txt"/>
+    <log path="./fich_log(pr).txt"/>
+</config>
