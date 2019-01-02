@@ -3,13 +3,21 @@
 """Programa cliente que abre un socket a un servidor."""
 import socket
 import sys
+import time
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
+def log (evento):
+        evento = (" ").join(evento.split())
+        tiempo = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        line_log = tiempo + " " + evento + "\n"
+        with  open (PATH_LOG, 'a') as log_file:
+            log_file.write(line_log)
+
 class ClientHandler(ContentHandler):
     #Creamos un diccionario para cada apartado y una lista para guardar cada diccionario
-
+    
     def __init__(self):
         self.account = {"username": "", "passwd": ""}
         self.uaserver = {"ip": "", "puerto": ""}
@@ -75,11 +83,16 @@ if __name__ == "__main__":
     listafinal = cHandler.get_tags()
     print()
 
+    
+
     PORT = listafinal[1][1]["puerto"]
     SERVER = listafinal[1][1]["ip"]
     USUARIO = listafinal[0][1]["username"]
     PORT_AUDIO = listafinal [2][1]["puerto"]
     PORT_PROXY = listafinal [3][1]["puerto"]
+    PATH_LOG = listafinal [4][1]["path"]
+
+    log("Starting client...")
 
     if METODO == "REGISTER":
         LINE = (METODO + " sip:" + USUARIO + " SIP/2.0\r\n" + "Expires:"
@@ -91,14 +104,23 @@ if __name__ == "__main__":
                 "m=audio " + PORT_AUDIO + " RTP\r\n")
     elif METODO == "BYE":
         LINE = (METODO + " sip:" + USUARIO + " SIP/2.0\r\n")
-# Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
-with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
-    my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    my_socket.connect((SERVER, int(PORT_PROXY)))
-    my_socket.send(bytes(LINE, 'utf-8') + b"\r\n")
-    print("Enviando: " + LINE)
-    data = my_socket.recv(1024)
-    print(data.decode('utf-8'))
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
+                my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                my_socket.connect((SERVER, int(PORT_PROXY)))
+                log("Sent to " + SERVER + ":" + PORT_PROXY + " " + LINE)
+                my_socket.send(bytes(LINE, 'utf-8') + b"\r\n")
+                print("Enviando: " + LINE)
+                data = my_socket.recv(1024)
+                print(data.decode('utf-8'))
+                if METODO == "INVITE":
+                    my_socket.send(bytes("ACK sip:" + USUARIO + " SIP/2.0", "utf-8")
+                                   + b"\r\n")
+    except ConnectionRefusedError:
+        print("No server listening at " + SERVER + " port " + PORT_PROXY)
+        log("Error: No server listening at " + SERVER + " port " + 
+            PORT_PROXY)
+    
 
 
 """
@@ -114,9 +136,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
 
     
     
-    if METODO == "INVITE":
-        my_socket.send(bytes("ACK sip:" + USUARIO + " SIP/2.0", "utf-8")
-                       + b"\r\n")
+    
         data = my_socket.recv(1024)
         print(data.decode('utf-8'))
 
