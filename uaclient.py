@@ -95,13 +95,13 @@ if __name__ == "__main__":
     log("Starting client...")
 
     if METODO == "REGISTER":
-        LINE = (METODO + " sip:" + USUARIO + " SIP/2.0\r\n" + "Expires:"
-                + OPCION + "\r\n")
+        LINE = (METODO + " sip:" + USUARIO + ":" + PORT + 
+                " SIP/2.0\r\n" + "Expires:" + OPCION + "\r\n")
     elif METODO == "INVITE":
         LINE = (METODO + " sip:" + OPCION + " SIP/2.0\r\n"+ 
                 "Content-Type: application/sdp\r\n\r\n" + "v=0\r\n" + "o=" +
-                USUARIO + " " + SERVER + "\r\n" + "s=Misesion\r\n" + "t=0\r\n" +
-                "m=audio " + PORT_AUDIO + " RTP\r\n")
+                USUARIO + " " + SERVER + "\r\n" + "s=Misesion\r\n" + "t=0\r\n" 
+                + "m=audio " + PORT_AUDIO + " RTP\r\n")
     elif METODO == "BYE":
         LINE = (METODO + " sip:" + USUARIO + " SIP/2.0\r\n")
     try:
@@ -113,14 +113,16 @@ if __name__ == "__main__":
                 print("Enviando: " + LINE)
                 data = my_socket.recv(1024)
                 print(data.decode('utf-8'))
+                log("Received from " + SERVER + ":" + PORT_PROXY + 
+                    data.decode('utf-8'))
                 if METODO == "INVITE":
-                    my_socket.send(bytes("ACK sip:" + USUARIO + " SIP/2.0", "utf-8")
-                                   + b"\r\n")
+                    my_socket.send(bytes("ACK sip:" + USUARIO 
+                                         + b" SIP/2.0", "utf-8") + b"\r\n")
     except ConnectionRefusedError:
         print("No server listening at " + SERVER + " port " + PORT_PROXY)
         log("Error: No server listening at " + SERVER + " port " + 
             PORT_PROXY)
-    
+
 
 
 """
@@ -130,15 +132,6 @@ if __name__ == "__main__":
     # Contenido que vamos a enviar
     LINE = (METODO + ' sip:' + USUARIO + ' SIP/2.0\r\n')
 
-
-
-
-
-    
-    
-    
-        data = my_socket.recv(1024)
-        print(data.decode('utf-8'))
 
     print("Fin.")
 """
