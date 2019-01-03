@@ -5,6 +5,7 @@ import socketserver
 import sys
 import os
 import time
+import random
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -57,10 +58,14 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             str(self.client_address[1]) + " " + line)
 
         if line_conten[0] == "REGISTER":
-            if len(line_conten) != 4:
+            if len(line_conten) != 4 and 6:
                 self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
             else:
-                self.wfile.write(b" Registrando... ")
+                if len(line_conten) != 6:
+                    nonce = str(random.randint(0, 999999999999999999999))
+                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
+                                 b"WWW Authenticate: Digest nonce= " + b'"' +
+                                 bytes(nonce, 'utf-8') + b'"')
                 
         elif line_conten[0] != "BYE":
             if line_conten[0] != "ACK":
