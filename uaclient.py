@@ -124,6 +124,15 @@ if __name__ == "__main__":
                         listanonce = listaline_received[-1].split('"')
                         nonce = listanonce[1]
                         print(nonce)
+                        LINE = (METODO + " sip:" + USUARIO + ":" + PORT + 
+                                " SIP/2.0\r\nExpires:" + OPCION + "\r\n" + 
+                                "Authorization: Digest response=" + '"' + nonce 
+                                + '"')
+                        my_socket.send(bytes(LINE, 'utf-8') + b"\r\n")
+                        print("Enviando..." + LINE)
+                        data = my_socket.recv(1024)
+                        line_received = data.decode('utf-8')
+                        print(line_received)
 
                 if METODO == "INVITE":
                     my_socket.send(bytes("ACK sip:" + USUARIO 
