@@ -68,6 +68,21 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     line = " Registrando..."
                     log("Send to " + str(self.client_address[0]) + ":" + 
                         str(self.client_address[1]) + " " + line)
+                    
+                    #Creamos lista auxiliar para guardar todos los datos solicitados
+                    usuario = line_conten[1].split(":")[1]
+                    ip = IP
+                    puerto = line_conten[1].split(":")[-1]
+                    fecha = time.strftime("%Y%m%d%H%M%S", 
+                                                  time.localtime(time.time()))
+                    expires = line_conten[3].split(":")[-1]
+
+                    datosusuarios = [usuario, ip, puerto, fecha, expires]
+                    print(datosusuarios)
+                    listadatos = []
+                    listadatos = listadatos.append(datosusuarios)
+                    print(listadatos)
+                    
             else:
                 if len(line_conten) != 7:
                     nonce = str(random.randint(0, 999999999999999999999))
@@ -101,6 +116,7 @@ if __name__ == "__main__":
     listafinal = cHandler.get_tags()
     print(listafinal)
 
+    IP = listafinal[0][1]["ip"]
     PORT_PROXY = listafinal[0][1]["puerto"]
     SERVER = listafinal[0][1]["name"]
     PATH_LOG = listafinal[2][1]["path"]

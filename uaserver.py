@@ -95,7 +95,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 log ("Sent to " + SERVER + ":" + PORT_PROXY + line)
 
         elif line_conten[0] == "ACK":
-            aEjecutar = "mp32rtp -i 127.0.0.1 -p 23032 < cancion.mp3"
+            aEjecutar = "mp32rtp -i 127.0.0.1 -p" + PORT_AUDIO + "< cancion.mp3"
             print("Vamos a ejecutar", aEjecutar)
             os.system(aEjecutar)
         elif line_conten[0] == "BYE":
