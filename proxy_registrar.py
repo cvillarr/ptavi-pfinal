@@ -3,7 +3,6 @@
 
 import socketserver
 import sys
-import os
 import time
 import random
 
@@ -61,18 +60,31 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             if len(line_conten) != 4:
                 if len(line_conten) != 7:
                     self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
+                    line = "SIP/2.0 400 Bad Request\r\n\r\n"
+                    log("Send to " + str(self.client_address[0]) + ":" + 
+                        str(self.client_address[1]) + " " + line)
                 else:
                     self.wfile.write(b"Registrando...")
+                    line = " Registrando..."
+                    log("Send to " + str(self.client_address[0]) + ":" + 
+                        str(self.client_address[1]) + " " + line)
             else:
                 if len(line_conten) != 7:
                     nonce = str(random.randint(0, 999999999999999999999))
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                      b"WWW Authenticate: Digest nonce= " + b'"' 
                                      + bytes(nonce, 'utf-8') + b'"')
+                    line = "SIP/2.0 401 Unauthorized WWW Authenticate:Digest nonce="
+                    log("Send to " + str(self.client_address[0]) + ":" + 
+                        str(self.client_address[1]) + " " + line + nonce)
+        
         elif line_conten[0] != "BYE":
             if line_conten[0] != "ACK":
                     if line_conten[0] != "INVITE":
                         self.wfile.write(b"SIP/2.0 405 Method Not Allowed")
+                        line = "SIP/2.0 405 Method Not Allowed"
+                        log("Send to " + str(self.client_address[0]) + ":" + 
+                        str(self.client_address[1]) + " " + line)
 
 if __name__ == "__main__":
 
