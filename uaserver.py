@@ -10,15 +10,18 @@ import time
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
-def log (evento):
+
+def log(evento):
         evento = (" ").join(evento.split())
         tiempo = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         line_log = tiempo + " " + evento + "\n"
-        with  open (PATH_LOG, 'a') as log_file:
+        with open(PATH_LOG, 'a') as log_file:
             log_file.write(line_log)
 
+
 class ClientHandler(ContentHandler):
-    #Creamos un diccionario para cada apartado y una lista para guardar cada diccionario
+    # Creamos un diccionario para cada apartado y una lista para guardar
+    # cada diccionario
     def __init__(self):
         self.account = {"username": "", "passwd": ""}
         self.uaserver = {"ip": "", "puerto": ""}
@@ -26,7 +29,7 @@ class ClientHandler(ContentHandler):
         self.regproxy = {"ip": "", "puerto": ""}
         self.log = {"path": ""}
         self.audio = {"path": ""}
-        self.listafinal = [] 
+        self.listafinal = []
 
     def startElement(self, name, attrs):
         if name == "account":
@@ -61,7 +64,7 @@ class ClientHandler(ContentHandler):
             self.listafinal.append([name, dicc_aux])
 
     def get_tags(self):
-        
+
         return self.listafinal
 
 
@@ -75,7 +78,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
         line_conten = line.split()
         print("El cliente nos manda " + line)
         log("Received from " + SERVER + ":" + PORT_PROXY + line)
-        
+
         if line_conten[0] == "INVITE":
             if len(line_conten) != 13:
                 self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
@@ -85,14 +88,14 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 180 Ring\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n"
-                                 + b"Content-Type: application/sdp\r\n\r\n" 
-                                 + b"v=0\r\n" + b"o=" 
-                                 + bytes(line_conten[6].split("=")[-1], 'utf-8') 
-                                 + b" " + bytes(SERVER, 'utf-8') + b"\r\n" 
-                                 + b"s=Misesion\r\n" + b"t=0\r\n" + b"m=audio " 
+                                 + b"Content-Type: application/sdp\r\n\r\n"
+                                 + b"v=0\r\n" + b"o="
+                                 + bytes(line_conten[6].split("=")[-1], 'utf-8')
+                                 + b" " + bytes(SERVER, 'utf-8') + b"\r\n"
+                                 + b"s=Misesion\r\n" + b"t=0\r\n" + b"m=audio "
                                  + bytes(PORT_AUDIO, 'utf-8') + b" RTP\r\n")
-                line = "SIP/2.0 100 Trying 180 Ring 200 OK" 
-                log ("Sent to " + SERVER + ":" + PORT_PROXY + line)
+                line = "SIP/2.0 100 Trying 180 Ring 200 OK"
+                log("Sent to " + SERVER + ":" + PORT_PROXY + line)
 
         elif line_conten[0] == "ACK":
             aEjecutar = "mp32rtp -i 127.0.0.1 -p" + PORT_AUDIO + "< cancion.mp3"
@@ -116,6 +119,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
 
         # Si no hay más líneas salimos del bucle infinito
 
+
 if __name__ == "__main__":
 
     try:
@@ -132,17 +136,16 @@ if __name__ == "__main__":
     PORT = listafinal[1][1]["puerto"]
     SERVER = listafinal[1][1]["ip"]
     USUARIO = listafinal[0][1]["username"]
-    PORT_AUDIO = listafinal [2][1]["puerto"]
-    PORT_PROXY = listafinal [3][1]["puerto"]
-    PATH_LOG = listafinal [4][1]["path"]
+    PORT_AUDIO = listafinal[2][1]["puerto"]
+    PORT_PROXY = listafinal[3][1]["puerto"]
+    PATH_LOG = listafinal[4][1]["path"]
     # Creamos servidor de eco y escuchamos
     serv = socketserver.UDPServer(('', int(PORT)), EchoHandler)
     print("Listening...")
     log("Starting...")
-    
+
     try:
         serv.serve_forever()
     except KeyboardInterrupt:
         print("Server finished")
         log("Finishing")
-

@@ -8,16 +8,19 @@ import time
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
-def log (evento):
+
+def log(evento):
         evento = (" ").join(evento.split())
         tiempo = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         line_log = tiempo + " " + evento + "\n"
-        with  open (PATH_LOG, 'a') as log_file:
+        with open(PATH_LOG, 'a') as log_file:
             log_file.write(line_log)
 
+
 class ClientHandler(ContentHandler):
-    #Creamos un diccionario para cada apartado y una lista para guardar cada diccionario
-    
+    # Creamos un diccionario para cada apartado y una lista para guardar
+    # cada diccionario
+
     def __init__(self):
         self.account = {"username": "", "passwd": ""}
         self.uaserver = {"ip": "", "puerto": ""}
@@ -25,7 +28,7 @@ class ClientHandler(ContentHandler):
         self.regproxy = {"ip": "", "puerto": ""}
         self.log = {"path": ""}
         self.audio = {"path": ""}
-        self.listafinal = [] 
+        self.listafinal = []
 
     def startElement(self, name, attrs):
         if name == "account":
@@ -64,7 +67,6 @@ class ClientHandler(ContentHandler):
         return self.listafinal
 
 
-
 if __name__ == "__main__":
 
     try:
@@ -83,24 +85,22 @@ if __name__ == "__main__":
     listafinal = cHandler.get_tags()
     print()
 
-    
-
     PORT = listafinal[1][1]["puerto"]
     SERVER = listafinal[1][1]["ip"]
     USUARIO = listafinal[0][1]["username"]
-    PORT_AUDIO = listafinal [2][1]["puerto"]
-    PORT_PROXY = listafinal [3][1]["puerto"]
-    PATH_LOG = listafinal [4][1]["path"]
+    PORT_AUDIO = listafinal[2][1]["puerto"]
+    PORT_PROXY = listafinal[3][1]["puerto"]
+    PATH_LOG = listafinal[4][1]["path"]
 
     log("Starting client...")
 
     if METODO == "REGISTER":
-        LINE = (METODO + " sip:" + USUARIO + ":" + PORT + 
+        LINE = (METODO + " sip:" + USUARIO + ":" + PORT +
                 " SIP/2.0\r\n" + "Expires:" + OPCION + "\r\n")
     elif METODO == "INVITE":
-        LINE = (METODO + " sip:" + OPCION + " SIP/2.0\r\n"+ 
+        LINE = (METODO + " sip:" + OPCION + " SIP/2.0\r\n" +
                 "Content-Type: application/sdp\r\n\r\n" + "v=0\r\n" + "o=" +
-                USUARIO + " " + SERVER + "\r\n" + "s=Misesion\r\n" + "t=0\r\n" 
+                USUARIO + " " + SERVER + "\r\n" + "s=Misesion\r\n" + "t=0\r\n"
                 + "m=audio " + PORT_AUDIO + " RTP\r\n")
     elif METODO == "BYE":
         LINE = (METODO + " sip:" + USUARIO + " SIP/2.0\r\n")
@@ -116,7 +116,7 @@ if __name__ == "__main__":
                 print(line_received)
                 listaline_received = line_received.split(" ")
 
-                log("Received from " + SERVER + ":" + PORT_PROXY + 
+                log("Received from " + SERVER + ":" + PORT_PROXY +
                     data.decode('utf-8'))
 
                 if METODO == "REGISTER":
@@ -124,41 +124,28 @@ if __name__ == "__main__":
                         listanonce = listaline_received[-1].split('"')
                         nonce = listanonce[1]
                         print(nonce)
-                        LINE = (METODO + " sip:" + USUARIO + ":" + PORT + 
-                                " SIP/2.0\r\nExpires:" + OPCION + "\r\n" + 
-                                "Authorization: Digest response=" + '"' + nonce 
+                        LINE = (METODO + " sip:" + USUARIO + ":" + PORT +
+                                " SIP/2.0\r\nExpires:" + OPCION + "\r\n" +
+                                "Authorization: Digest response=" + '"' + nonce
                                 + '"')
                         my_socket.send(bytes(LINE, 'utf-8') + b"\r\n")
                         print("Enviando..." + LINE)
-                        log("Sent to " + SERVER + ":" + PORT_PROXY + " " + 
+                        log("Sent to " + SERVER + ":" + PORT_PROXY + " " +
                             LINE)
                         data = my_socket.recv(1024)
                         line_received = data.decode('utf-8')
                         print(line_received)
-                        log("Received from " + SERVER + ":" + PORT_PROXY + 
+                        log("Received from " + SERVER + ":" + PORT_PROXY +
                             data.decode('utf-8'))
 
                 if METODO == "INVITE":
-                    LINE = "ACK sip:" + USUARIO + ":" + PORT+ " SIP/2.0"
+                    LINE = "ACK sip:" + USUARIO + ":" + PORT + " SIP/2.0"
                     my_socket.send(bytes(LINE, "utf-8") + b"\r\n")
                     data = my_socket.recv(1024)
-                    log("Received from " + SERVER + ":" + PORT_PROXY + 
-                         data.decode('utf-8'))
-    
+                    log("Received from " + SERVER + ":" + PORT_PROXY +
+                        data.decode('utf-8'))
+
     except ConnectionRefusedError:
         print("No server listening at " + SERVER + " port " + PORT_PROXY)
-        log("Error: No server listening at " + SERVER + " port " + 
+        log("Error: No server listening at " + SERVER + " port " +
             PORT_PROXY)
-
-
-
-"""
-
-
-
-    # Contenido que vamos a enviar
-    LINE = (METODO + ' sip:' + USUARIO + ' SIP/2.0\r\n')
-
-
-    print("Fin.")
-"""
