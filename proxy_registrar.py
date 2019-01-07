@@ -88,9 +88,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     
                     print("USUARIO REGISTRADO")
                     print(self.listadatos)
-                    if len(self.listadatos) >= 2:
-                        PORT_ENVIO = self.listadatos[1][0]["puerto"]
-
+                    
             else:
                 if len(line_conten) != 7:
                     nonce = str(random.randint(0, 999999999999999999999))
@@ -101,25 +99,26 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     log("Send to " + str(self.client_address[0]) + ":" + 
                         str(self.client_address[1]) + " " + line + nonce)
 
-        elif line_conten[0] ==  "BYE":
-            if line_conten[0] == "ACK":
-                if line_conten[0] == "INVITE":
-                    line_conten = self.rfile.read().decode('utf-8')
-                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
-                            my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                            my_socket.connect((IP, int(PORT_ENVIO)))
-                            my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                            data = my_socket.recv(1024)
-                            line_received = data.decode('utf-8')
-                            print(line_received)
-       
+        elif line_conten[0] == "INVITE":
+            if len(self.listadatos) >= 2:
+                        PORT_ENVIO = self.listadatos[1][0]["puerto"]
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
+                my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                my_socket.connect((IP, int(PORT_ENVIO)))
+                my_socket.send(bytes(line, 'utf-8') + b"\r\n")
+                data = my_socket.recv(1024)
+                line_received = data.decode('utf-8')
+                print(line_received)
+            self.wfile.write(bytes(line_received, 'utf-8'))
+
         elif line_conten[0] != "BYE":
             if line_conten[0] != "ACK":
                     if line_conten[0] != "INVITE":
-                        self.wfile.write(b"SIP/2.0 405 Method Not Allowed")
-                        line = "SIP/2.0 405 Method Not Allowed"
-                        log("Send to " + str(self.client_address[0]) + ":" + 
-                        str(self.client_address[1]) + " " + line)
+                        if line_conten[0] != "REGISTER":
+                            self.wfile.write(b"SIP/2.0 405 Method Not Allowed")
+                            line = "SIP/2.0 405 Method Not Allowed"
+                            log("Send to " + str(self.client_address[0]) + ":" + 
+                            str(self.client_address[1]) + " " + line)
 
 if __name__ == "__main__":
 
