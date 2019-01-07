@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import socket
 import socketserver
 import sys
 import time
@@ -48,8 +49,9 @@ class ClientHandler(ContentHandler):
 
 class EchoHandler(socketserver.DatagramRequestHandler):
     """Echo server class."""
+    listadatos = []
     def handle(self):
-
+        
         line = self.rfile.read().decode('utf-8')
         line_conten = line.split()
         print("El cliente nos manda " + line)
@@ -64,8 +66,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     log("Send to " + str(self.client_address[0]) + ":" + 
                         str(self.client_address[1]) + " " + line)
                 else:
-                    self.wfile.write(b"Registrando...")
-                    line = " Registrando..."
+                    self.wfile.write(b"REGISTRADO")
+                    line = " REGISTRADO"
                     log("Send to " + str(self.client_address[0]) + ":" + 
                         str(self.client_address[1]) + " " + line)
                     
@@ -77,12 +79,18 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                                                   time.localtime(time.time()))
                     expires = line_conten[3].split(":")[-1]
 
-                    datosusuarios = [usuario, ip, puerto, fecha, expires]
-                    print(datosusuarios)
-                    listadatos = []
-                    listadatos = listadatos.append(datosusuarios)
-                    print(listadatos)
+                    datosusuarios = {"usuario": usuario, "ip": ip, 
+                                     "puerto": puerto, "fecha": fecha, 
+                                     "expires": expires}
+                    self.listadatos.append([datosusuarios])
+                    with  open ("./listadatos.txt", 'a') as ficherodatos:
+                        ficherodatos.write(str(datosusuarios))
                     
+                    print("USUARIO REGISTRADO")
+                    print(self.listadatos)
+                    if len(self.listadatos) >= 2:
+                        PORT_ENVIO = self.listadatos[1][0]["puerto"]
+
             else:
                 if len(line_conten) != 7:
                     nonce = str(random.randint(0, 999999999999999999999))
@@ -92,7 +100,19 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     line = "SIP/2.0 401 Unauthorized WWW Authenticate:Digest nonce="
                     log("Send to " + str(self.client_address[0]) + ":" + 
                         str(self.client_address[1]) + " " + line + nonce)
-        
+
+        elif line_conten[0] ==  "BYE":
+            if line_conten[0] == "ACK":
+                if line_conten[0] == "INVITE":
+                    line_conten = self.rfile.read().decode('utf-8')
+                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
+                            my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                            my_socket.connect((IP, int(PORT_ENVIO)))
+                            my_socket.send(bytes(line, 'utf-8') + b"\r\n")
+                            data = my_socket.recv(1024)
+                            line_received = data.decode('utf-8')
+                            print(line_received)
+       
         elif line_conten[0] != "BYE":
             if line_conten[0] != "ACK":
                     if line_conten[0] != "INVITE":

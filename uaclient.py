@@ -139,8 +139,8 @@ if __name__ == "__main__":
                             data.decode('utf-8'))
 
                 if METODO == "INVITE":
-                    my_socket.send(bytes("ACK sip:" + USUARIO + ":" + PORT
-                                         + b" SIP/2.0", "utf-8") + b"\r\n")
+                    LINE = "ACK sip:" + USUARIO + ":" + PORT+ " SIP/2.0"
+                    my_socket.send(bytes(LINE, "utf-8") + b"\r\n")
                     data = my_socket.recv(1024)
                     log("Received from " + SERVER + ":" + PORT_PROXY + 
                          data.decode('utf-8'))
