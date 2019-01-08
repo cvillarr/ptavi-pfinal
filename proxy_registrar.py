@@ -93,7 +93,6 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     self.listadatos.append([datosusuarios])
                     with open("./listadatos.txt", 'a') as ficherodatos:
                         ficherodatos.write(str(datosusuarios))
-
                     print("USUARIO REGISTRADO")
 
             else:
@@ -107,44 +106,48 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                         str(self.client_address[1]) + " " + line + nonce)
 
         elif line_conten[0] == "INVITE":
-            if len(self.listadatos) >= 2:
-                        PORT_ENVIO = self.listadatos[1][0]["puerto"]
+            if line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
+                port_envio = self.listadatos[1][0]["puerto"]
+            elif line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
+                port_envio = self.listadatos[0][0]["puerto"]
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(PORT_ENVIO)))
+                my_socket.connect((IP, int(port_envio)))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + PORT_ENVIO + " " + line)
+                log("Send to " + IP + ":" + port_envio + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + PORT_ENVIO + " " + line)
+                log("Received from " + IP + ":" + port_envio + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
         elif line_conten[0] == "ACK":
-            if len(self.listadatos) >= 2:
-                        PORT_ENVIO = self.listadatos[1][0]["puerto"]
+            if line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
+                port_envio = self.listadatos[0][0]["puerto"]
+            elif line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
+                port_envio = self.listadatos[1][0]["puerto"]
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(PORT_ENVIO)))
+                my_socket.connect((IP, int(port_envio)))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + PORT_ENVIO + " " + line)
+                log("Send to " + IP + ":" + port_envio + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + PORT_ENVIO + " " + line)
+                log("Received from " + IP + ":" + port_envio + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
         elif line_conten[0] == "BYE":
             if len(self.listadatos) >= 2:
-                        PORT_ENVIO = self.listadatos[1][0]["puerto"]
+                        port_envio = self.listadatos[1][0]["puerto"]
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(PORT_ENVIO)))
+                my_socket.connect((IP, int(port_envio)))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + PORT_ENVIO + " " + line)
+                log("Send to " + IP + ":" + port_envio + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + PORT_ENVIO + " " + line)
+                log("Received from " + IP + ":" + port_envio + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
