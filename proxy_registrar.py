@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Programa proxy que hace de intermediario entre cliente y servidor."""
 
 import socket
 import socketserver
@@ -12,24 +13,26 @@ from xml.sax.handler import ContentHandler
 
 
 def log(evento):
-        evento = (" ").join(evento.split())
-        tiempo = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-        line_log = tiempo + " " + evento + "\n"
-        with open(PATH_LOG, 'a') as log_file:
-            log_file.write(line_log)
+    """Crea un archivo para escribir los mensajes de depuración."""
+    evento = (" ").join(evento.split())
+    tiempo = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+    line_log = tiempo + " " + evento + "\n"
+    with open(PATH_LOG, 'a') as log_file:
+        log_file.write(line_log)
 
 
 class ClientHandler(ContentHandler):
-    # Creamos un diccionario para cada apartado y una lista para guardar
-    # cada diccionario
+    """Echo client class."""
 
     def __init__(self):
+        """Crea un dicc para cada apartado y una lista para guardarlo."""
         self.server = {"name": "", "ip": "", "puerto": ""}
         self.database = {"path": "", "passwdpath": ""}
         self.log = {"path": ""}
         self.listafinal = []
 
     def startElement(self, name, attrs):
+        """Configuro las distintas opciones que tiene el servidor proxy."""
         if name == "server":
             dicc_aux = {}
             for attr in self.server:
@@ -47,7 +50,7 @@ class ClientHandler(ContentHandler):
             self.listafinal.append([name, dicc_aux])
 
     def get_tags(self):
-
+        """Devuelve la lista final de la configuración."""
         return self.listafinal
 
 
@@ -57,7 +60,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     listadatos = []
 
     def handle(self):
-
+        """Manejador de códigos de respuesta del servidor proxy."""
         line = self.rfile.read().decode('utf-8')
         line_conten = line.split()
         print("El cliente nos manda " + line)
@@ -92,7 +95,6 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                         ficherodatos.write(str(datosusuarios))
 
                     print("USUARIO REGISTRADO")
-                    print(self.listadatos)
 
             else:
                 if len(line_conten) != 7:
@@ -111,8 +113,10 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(PORT_ENVIO)))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
+                log("Send to " + IP + ":" + PORT_ENVIO + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
+                log("Received from " + IP + ":" + PORT_ENVIO + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
@@ -123,8 +127,10 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(PORT_ENVIO)))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
+                log("Send to " + IP + ":" + PORT_ENVIO + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
+                log("Received from " + IP + ":" + PORT_ENVIO + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
@@ -135,8 +141,10 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(PORT_ENVIO)))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
+                log("Send to " + IP + ":" + PORT_ENVIO + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
+                log("Received from " + IP + ":" + PORT_ENVIO + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
@@ -163,7 +171,6 @@ if __name__ == "__main__":
     parser.setContentHandler(cHandler)
     parser.parse(open(archivo))
     listafinal = cHandler.get_tags()
-    print(listafinal)
 
     IP = listafinal[0][1]["ip"]
     PORT_PROXY = listafinal[0][1]["puerto"]

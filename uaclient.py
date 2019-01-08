@@ -10,6 +10,7 @@ from xml.sax.handler import ContentHandler
 
 
 def log(evento):
+        """Crea un archivo para escribir los mensajes de depuración."""
         evento = (" ").join(evento.split())
         tiempo = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         line_log = tiempo + " " + evento + "\n"
@@ -18,10 +19,10 @@ def log(evento):
 
 
 class ClientHandler(ContentHandler):
-    # Creamos un diccionario para cada apartado y una lista para guardar
-    # cada diccionario
+    """Echo client class."""
 
     def __init__(self):
+        """Crea un dicc para cada apartado y una lista para guardarlo."""
         self.account = {"username": "", "passwd": ""}
         self.uaserver = {"ip": "", "puerto": ""}
         self.rtpaudio = {"puerto": ""}
@@ -31,6 +32,7 @@ class ClientHandler(ContentHandler):
         self.listafinal = []
 
     def startElement(self, name, attrs):
+        """Configuro las distintas opciones que tiene el cliente."""
         if name == "account":
             dicc_aux = {}
             for attr in self.account:
@@ -63,7 +65,7 @@ class ClientHandler(ContentHandler):
             self.listafinal.append([name, dicc_aux])
 
     def get_tags(self):
-
+        """Devuelve la lista final de la configuración."""
         return self.listafinal
 
 
@@ -135,8 +137,8 @@ if __name__ == "__main__":
                         data = my_socket.recv(1024)
                         line_received = data.decode('utf-8')
                         print(line_received)
-                        log("Received from " + SERVER + ":" + PORT_PROXY +
-                            data.decode('utf-8'))
+                        log("Received from " + SERVER + ":" + PORT_PROXY + " "
+                            + data.decode('utf-8'))
 
                 if METODO == "INVITE":
                     LINE = "ACK sip:" + USUARIO + ":" + PORT + " SIP/2.0"
@@ -149,3 +151,4 @@ if __name__ == "__main__":
         print("No server listening at " + SERVER + " port " + PORT_PROXY)
         log("Error: No server listening at " + SERVER + " port " +
             PORT_PROXY)
+    log("Finishing...")
