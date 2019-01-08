@@ -58,6 +58,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     """Echo server class."""
 
     listadatos = []
+    port_envio = [0]
 
     def handle(self):
         """Manejador de códigos de respuesta del servidor proxy."""
@@ -107,47 +108,41 @@ class EchoHandler(socketserver.DatagramRequestHandler):
 
         elif line_conten[0] == "INVITE":
             if line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
-                port_envio = self.listadatos[1][0]["puerto"]
+                self.port_envio[0] = self.listadatos[1][0]["puerto"]
             elif line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
-                port_envio = self.listadatos[0][0]["puerto"]
+                self.port_envio[0] = self.listadatos[0][0]["puerto"]
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(port_envio)))
+                my_socket.connect((IP, int(self.port_envio[0])))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + port_envio + " " + line)
+                log("Send to " + IP + ":" + self.port_envio[0] + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + port_envio + " " + line)
+                log("Received from " + IP + ":" + self.port_envio[0] + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
         elif line_conten[0] == "ACK":
-            if line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
-                port_envio = self.listadatos[0][0]["puerto"]
-            elif line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
-                port_envio = self.listadatos[1][0]["puerto"]
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(port_envio)))
+                my_socket.connect((IP, int(self.port_envio[0])))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + port_envio + " " + line)
+                log("Send to " + IP + ":" + self.port_envio[0] + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + port_envio + " " + line)
+                log("Received from " + IP + ":" + self.port_envio[0] + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
         elif line_conten[0] == "BYE":
-            if len(self.listadatos) >= 2:
-                        port_envio = self.listadatos[1][0]["puerto"]
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(port_envio)))
+                my_socket.connect((IP, int(self.port_envio[0])))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + port_envio + " " + line)
+                log("Send to " + IP + ":" + self.port_envio[0] + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + port_envio + " " + line)
+                log("Received from " + IP + ":" + self.port_envio[0] + " " + line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
