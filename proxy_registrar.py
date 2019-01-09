@@ -113,7 +113,6 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                         with open("./listadatos.txt", 'a') as ficherodatos:
                             ficherodatos.write(str(datosusuarios))
                         print("USUARIO REGISTRADO")
-                        print(self.listadatos)
                     else:
                         self.nonce = str(random.randint(0, 
                                                         999999999999999999999))
@@ -130,13 +129,10 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                         str(self.client_address[1]) + " " + line + self.nonce)
 
         elif line_conten[0] == "INVITE":
-            print(line_conten)
             if line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
                 self.port_envio[0] = self.listadatos[1][0]["puerto"]
-                print("puerto1")
             elif line_conten[1].split(":")[-1] == self.listadatos[0][0]["usuario"]:
                 self.port_envio[0] = self.listadatos[0][0]["puerto"]
-                print("puerto2")
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(self.port_envio[0])))
@@ -181,7 +177,15 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                             log("Send to " + str(self.client_address[0]) + ":"
                                 + str(self.client_address[1]) + " " + line)
 
-
+        if len(self.listadatos) >= 1:
+            usuarioexpirado = 0.0 # inicializo como float
+            for i in [0, (len(self.listadatos)-1)]:
+                tiemporeal = time.time()
+                usuarioexpirado = (float(self.listadatos[i][0]["fecha"]) + 
+                                   float(self.listadatos[i][0]["expires"]))
+            if tiemporeal >= usuarioexpirado:
+                del self.listadatos[i]
+        
 if __name__ == "__main__":
 
     try:
