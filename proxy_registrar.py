@@ -7,6 +7,8 @@ import socketserver
 import sys
 import time
 import random
+import json
+import hashlib
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -59,6 +61,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
 
     listadatos = []
     port_envio = [0]
+    nonce = str(random.randint(0, 999999999999999999999))
 
     def handle(self):
         """Manejador de códigos de respuesta del servidor proxy."""
@@ -69,6 +72,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             str(self.client_address[1]) + " " + line)
 
         if line_conten[0] == "REGISTER":
+            
             if len(line_conten) != 4:
                 if len(line_conten) != 7:
                     self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
@@ -76,46 +80,68 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     log("Send to " + str(self.client_address[0]) + ":" +
                         str(self.client_address[1]) + " " + line)
                 else:
-                    self.wfile.write(b"REGISTRADO")
-                    line = " REGISTRADO"
-                    log("Send to " + str(self.client_address[0]) + ":" +
-                        str(self.client_address[1]) + " " + line)
-
                     usuario = line_conten[1].split(":")[1]
-                    ip = IP
-                    puerto = line_conten[1].split(":")[-1]
-                    fecha = time.strftime("%Y%m%d%H%M%S",
-                                          time.localtime(time.time()))
-                    expires = line_conten[3].split(":")[-1]
-
-                    datosusuarios = {"usuario": usuario, "ip": ip,
-                                     "puerto": puerto, "fecha": fecha,
-                                     "expires": expires}
-                    self.listadatos.append([datosusuarios])
-                    with open("./listadatos.txt", 'a') as ficherodatos:
-                        ficherodatos.write(str(datosusuarios))
-                    print("USUARIO REGISTRADO")
-
+                    with open("./passwords.json", "r") as listausuarios:
+                        registro_usuario = json.load(listausuarios)
+                        if usuario in registro_usuario:
+                            passwd = registro_usuario[usuario]
+                        else:
+                            self.wfile.write(b"SIP/2.0 404 User Not Found" +
+                                             b"\r\n\r\n")
+                    autenticacion = hashlib.md5()
+                    hash_recibido = line_conten[6].split('"')[1]
+                    autenticacion.update(bytes(passwd, 'utf-8'))
+                    autenticacion.update(bytes(self.nonce, 'utf-8'))
+                    autenticacion.digest
+                    if hash_recibido == autenticacion.hexdigest():
+                        self.wfile.write(b"USUARIO REGISTRADO")
+                        line = " USUARIO REGISTRADO"
+                        log("Send to " + str(self.client_address[0]) + ":" +
+                            str(self.client_address[1]) + " " + line)
+    
+                        usuario = line_conten[1].split(":")[1]
+                        ip = IP
+                        puerto = line_conten[1].split(":")[-1]
+                        fecha = time.strftime("%Y%m%d%H%M%S",
+                                              time.localtime(time.time()))
+                        expires = line_conten[3].split(":")[-1]
+    
+                        datosusuarios = {"usuario": usuario, "ip": ip,
+                                         "puerto": puerto, "fecha": fecha,
+                                         "expires": expires}
+                        self.listadatos.append([datosusuarios])
+                        with open("./listadatos.txt", 'a') as ficherodatos:
+                            ficherodatos.write(str(datosusuarios))
+                        print("USUARIO REGISTRADO")
+                        print(self.listadatos)
+                    else:
+                        self.nonce = str(random.randint(0, 
+                                                        999999999999999999999))
+                        self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
+                                     b"WWW Authenticate: Digest nonce= " + b'"'
+                                     + bytes(self.nonce, 'utf-8') + b'"')
             else:
                 if len(line_conten) != 7:
-                    nonce = str(random.randint(0, 999999999999999999999))
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                      b"WWW Authenticate: Digest nonce= " + b'"'
-                                     + bytes(nonce, 'utf-8') + b'"')
+                                     + bytes(self.nonce, 'utf-8') + b'"')
                     line = "SIP/2.0 401 Unauthorized WWW Authenticate:Digest nonce="
                     log("Send to " + str(self.client_address[0]) + ":" +
-                        str(self.client_address[1]) + " " + line + nonce)
+                        str(self.client_address[1]) + " " + line + self.nonce)
 
         elif line_conten[0] == "INVITE":
+            print(line_conten)
             if line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
                 self.port_envio[0] = self.listadatos[1][0]["puerto"]
-            elif line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
+                print("puerto1")
+            elif line_conten[1].split(":")[-1] == self.listadatos[0][0]["usuario"]:
                 self.port_envio[0] = self.listadatos[0][0]["puerto"]
+                print("puerto2")
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(self.port_envio[0])))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + self.port_envio[0] + " " + line)
+                log("Send to " + IP + ":" + str(self.port_envio[0]) + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
                 log("Received from " + IP + ":" + self.port_envio[0] + " " + line)
@@ -127,7 +153,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(self.port_envio[0])))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + self.port_envio[0] + " " + line)
+                log("Send to " + IP + ":" + str(self.port_envio[0]) + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
                 log("Received from " + IP + ":" + self.port_envio[0] + " " + line)

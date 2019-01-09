@@ -4,6 +4,7 @@
 import socket
 import sys
 import time
+import hashlib
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -93,6 +94,7 @@ if __name__ == "__main__":
     PORT_AUDIO = listafinal[2][1]["puerto"]
     PORT_PROXY = listafinal[3][1]["puerto"]
     PATH_LOG = listafinal[4][1]["path"]
+    PASSWD = listafinal[0][1]["passwd"]
 
     log("Starting client...")
 
@@ -125,11 +127,14 @@ if __name__ == "__main__":
                     if listaline_received[1] == "401":
                         listanonce = listaline_received[-1].split('"')
                         nonce = listanonce[1]
-                        print(nonce)
+                        autenticacion = hashlib.md5()
+                        autenticacion.update(bytes(PASSWD, 'utf-8'))
+                        autenticacion.update(bytes(nonce, 'utf-8'))
+                        autenticacion.digest
                         LINE = (METODO + " sip:" + USUARIO + ":" + PORT +
                                 " SIP/2.0\r\nExpires:" + OPCION + "\r\n" +
-                                "Authorization: Digest response=" + '"' + nonce
-                                + '"')
+                                "Authorization: Digest response=" + '"' + 
+                                autenticacion.hexdigest() + '"')
                         my_socket.send(bytes(LINE, 'utf-8') + b"\r\n")
                         print("Enviando..." + LINE)
                         log("Sent to " + SERVER + ":" + PORT_PROXY + " " +
