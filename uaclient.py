@@ -133,7 +133,7 @@ if __name__ == "__main__":
                         autenticacion.digest
                         LINE = (METODO + " sip:" + USUARIO + ":" + PORT +
                                 " SIP/2.0\r\nExpires:" + OPCION + "\r\n" +
-                                "Authorization: Digest response=" + '"' + 
+                                "Authorization: Digest response=" + '"' +
                                 autenticacion.hexdigest() + '"')
                         my_socket.send(bytes(LINE, 'utf-8') + b"\r\n")
                         print("Enviando..." + LINE)

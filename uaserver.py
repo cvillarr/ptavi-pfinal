@@ -75,6 +75,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     """Echo server class."""
 
     port_audc = "1122"
+
     def handle(self):
         """Manejador de códigos de respuesta del servidor final."""
         line = self.rfile.read().decode('utf-8')
@@ -88,7 +89,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 line = "SIP/2.0 400 Bad Request\r\n\r\n"
                 log("Sent to " + SERVER + ":" + PORT_PROXY + line)
             else:
-                
+
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 180 Ring\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n"
@@ -97,7 +98,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                                  bytes(line_conten[6].split("=")[-1], 'utf-8')
                                  + b" " + bytes(SERVER, 'utf-8') + b"\r\n"
                                  + b"s=Misesion\r\n" + b"t=0\r\n" + b"m=audio "
-                                 + bytes(self.port_audc, 'utf-8') + b" RTP\r\n")
+                                 + bytes(self.port_audc, 'utf-8') +
+                                 b" RTP\r\n")
                 line = "SIP/2.0 100 Trying 180 Ring 200 OK"
                 log("Sent to " + SERVER + ":" + PORT_PROXY + line)
 

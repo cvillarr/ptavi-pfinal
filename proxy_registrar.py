@@ -72,7 +72,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             str(self.client_address[1]) + " " + line)
 
         if line_conten[0] == "REGISTER":
-            
+
             if len(line_conten) != 4:
                 if len(line_conten) != 7:
                     self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
@@ -98,14 +98,14 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                         line = " USUARIO REGISTRADO"
                         log("Send to " + str(self.client_address[0]) + ":" +
                             str(self.client_address[1]) + " " + line)
-    
+
                         usuario = line_conten[1].split(":")[1]
                         ip = IP
                         puerto = line_conten[1].split(":")[-1]
                         fecha = time.strftime("%Y%m%d%H%M%S",
                                               time.localtime(time.time()))
                         expires = line_conten[3].split(":")[-1]
-    
+
                         datosusuarios = {"usuario": usuario, "ip": ip,
                                          "puerto": puerto, "fecha": fecha,
                                          "expires": expires}
@@ -114,7 +114,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                             ficherodatos.write(str(datosusuarios))
                         print("USUARIO REGISTRADO")
                     else:
-                        self.nonce = str(random.randint(0, 
+                        self.nonce = str(random.randint(0,
                                                         999999999999999999999))
                         self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                      b"WWW Authenticate: Digest nonce= " + b'"'
@@ -137,10 +137,12 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(self.port_envio[0])))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + str(self.port_envio[0]) + " " + line)
+                log("Send to " + IP + ":" + str(self.port_envio[0]) + " " +
+                    line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + self.port_envio[0] + " " + line)
+                log("Received from " + IP + ":" + self.port_envio[0] + " " +
+                    line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
@@ -149,10 +151,12 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 my_socket.connect((IP, int(self.port_envio[0])))
                 my_socket.send(bytes(line, 'utf-8') + b"\r\n")
-                log("Send to " + IP + ":" + str(self.port_envio[0]) + " " + line)
+                log("Send to " + IP + ":" + str(self.port_envio[0]) + " " +
+                    line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + self.port_envio[0] + " " + line)
+                log("Received from " + IP + ":" + self.port_envio[0] + " " +
+                    line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
@@ -164,7 +168,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 log("Send to " + IP + ":" + self.port_envio[0] + " " + line)
                 data = my_socket.recv(1024)
                 line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + self.port_envio[0] + " " + line)
+                log("Received from " + IP + ":" + self.port_envio[0] + " " +
+                    line)
                 print(line_received)
             self.wfile.write(bytes(line_received, 'utf-8'))
 
@@ -178,14 +183,15 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                                 + str(self.client_address[1]) + " " + line)
 
         if len(self.listadatos) >= 1:
-            usuarioexpirado = 0.0 # inicializo como float
+            usuarioexpirado = 0.0 """inicializo como float"""
             for i in [0, (len(self.listadatos)-1)]:
                 tiemporeal = time.time()
-                usuarioexpirado = (float(self.listadatos[i][0]["fecha"]) + 
+                usuarioexpirado = (float(self.listadatos[i][0]["fecha"]) +
                                    float(self.listadatos[i][0]["expires"]))
             if tiemporeal >= usuarioexpirado:
                 del self.listadatos[i]
-        
+
+
 if __name__ == "__main__":
 
     try:
