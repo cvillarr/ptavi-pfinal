@@ -117,34 +117,46 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                         self.nonce = str(random.randint(0,
                                                         999999999999999999999))
                         self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
-                                     b"WWW Authenticate: Digest nonce= " + b'"'
-                                     + bytes(self.nonce, 'utf-8') + b'"')
+                                         b"WWW Authenticate: Digest nonce= " +
+                                         b'"' + bytes(self.nonce, 'utf-8') +
+                                         b'"')
             else:
+                line = "SIP/2.0 401 Unauthorized WWWAuthenticate:Digest nonce="
                 if len(line_conten) != 7:
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                      b"WWW Authenticate: Digest nonce= " + b'"'
                                      + bytes(self.nonce, 'utf-8') + b'"')
-                    line = "SIP/2.0 401 Unauthorized WWW Authenticate:Digest nonce="
                     log("Send to " + str(self.client_address[0]) + ":" +
                         str(self.client_address[1]) + " " + line + self.nonce)
 
         elif line_conten[0] == "INVITE":
-            if line_conten[1].split(":")[-1] == self.listadatos[1][0]["usuario"]:
-                self.port_envio[0] = self.listadatos[1][0]["puerto"]
-            elif line_conten[1].split(":")[-1] == self.listadatos[0][0]["usuario"]:
-                self.port_envio[0] = self.listadatos[0][0]["puerto"]
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
-                my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                my_socket.connect((IP, int(self.port_envio[0])))
-                my_socket.send(bytes(line, 'utf-8') + b"\r\n")
+            try:
+                usuario1 = self.listadatos[1][0]["usuario"]
+                usuario2 = self.listadatos[0][0]["usuario"]
+                if line_conten[1].split(":")[-1] == usuario1:
+                    self.port_envio[0] = self.listadatos[1][0]["puerto"]
+                elif line_conten[1].split(":")[-1] == usuario2:
+                    self.port_envio[0] = self.listadatos[0][0]["puerto"]
+                with socket.socket(socket.AF_INET,
+                                   socket.SOCK_DGRAM) as my_socket:
+                    my_socket.setsockopt(socket.SOL_SOCKET,
+                                         socket.SO_REUSEADDR, 1)
+                    my_socket.connect((IP, int(self.port_envio[0])))
+                    my_socket.send(bytes(line, 'utf-8') + b"\r\n")
+                    log("Send to " + IP + ":" + str(self.port_envio[0]) + " " +
+                        line)
+                    data = my_socket.recv(1024)
+                    line_received = data.decode('utf-8')
+                    log("Received from " + IP + ":" + self.port_envio[0] + " "
+                        + line)
+                    print(line_received)
+                self.wfile.write(bytes(line_received, 'utf-8'))
+            except IndexError:
+                line = "SIP/2.0 404 User Not Found\r\n\r\n"
                 log("Send to " + IP + ":" + str(self.port_envio[0]) + " " +
                     line)
-                data = my_socket.recv(1024)
-                line_received = data.decode('utf-8')
-                log("Received from " + IP + ":" + self.port_envio[0] + " " +
-                    line)
-                print(line_received)
-            self.wfile.write(bytes(line_received, 'utf-8'))
+                self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
+                print("SIP/2.0 404 User Not Found")
 
         elif line_conten[0] == "ACK":
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
@@ -183,7 +195,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                                 + str(self.client_address[1]) + " " + line)
 
         if len(self.listadatos) >= 1:
-            usuarioexpirado = 0.0 """inicializo como float"""
+            # iniciacilizo como float
+            usuarioexpirado = 0.0
             for i in [0, (len(self.listadatos)-1)]:
                 tiemporeal = time.time()
                 usuarioexpirado = (float(self.listadatos[i][0]["fecha"]) +

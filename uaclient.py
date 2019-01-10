@@ -144,13 +144,13 @@ if __name__ == "__main__":
                         print(line_received)
                         log("Received from " + SERVER + ":" + PORT_PROXY + " "
                             + data.decode('utf-8'))
-
-                if METODO == "INVITE":
-                    LINE = "ACK sip:" + USUARIO + ":" + PORT + " SIP/2.0"
-                    my_socket.send(bytes(LINE, "utf-8") + b"\r\n")
-                    data = my_socket.recv(1024)
-                    log("Received from " + SERVER + ":" + PORT_PROXY +
-                        data.decode('utf-8'))
+                if line_received[50:56] == "200 OK":
+                    if METODO == "INVITE":
+                        LINE = "ACK sip:" + USUARIO + ":" + PORT + " SIP/2.0"
+                        my_socket.send(bytes(LINE, "utf-8") + b"\r\n")
+                        data = my_socket.recv(1024)
+                        log("Received from " + SERVER + ":" + PORT_PROXY +
+                            data.decode('utf-8'))
 
     except ConnectionRefusedError:
         print("No server listening at " + SERVER + " port " + PORT_PROXY)

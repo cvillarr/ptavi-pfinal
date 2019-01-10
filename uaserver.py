@@ -104,7 +104,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 log("Sent to " + SERVER + ":" + PORT_PROXY + line)
 
         elif line_conten[0] == "ACK":
-            aEjecutar = "mp32rtp -i 127.0.0.1 -p" + self.port_audc + "< cancion.mp3"
+            media = "< cancion.mp3"
+            aEjecutar = "mp32rtp -i 127.0.0.1 -p" + self.port_audc + media
             print("Vamos a ejecutar", aEjecutar)
             os.system(aEjecutar)
             self.wfile.write(b"Recibiendo archivo...\r\n\r\n")
