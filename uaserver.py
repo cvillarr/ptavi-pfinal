@@ -116,7 +116,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 line = "SIP/2.0 400 Bad Request"
                 log("Sent to " + SERVER + ":" + PORT_PROXY + " " + line)
             else:
-                self.wfile.write(b" Finalizando comunicacion")
+                self.wfile.write(b"SIP/2.0 200 OK Finalizando comunicacion")
                 line = " Finalizando comunicación"
                 log("Sent to " + SERVER + ":" + PORT_PROXY + " " + line)
         if line_conten[0] != "BYE":

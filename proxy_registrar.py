@@ -81,7 +81,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                         str(self.client_address[1]) + " " + line)
                 else:
                     usuario = line_conten[1].split(":")[1]
-                    with open("./passwords.json", "r") as listausuarios:
+                    with open("./passwords", "r") as listausuarios:
                         registro_usuario = json.load(listausuarios)
                         if usuario in registro_usuario:
                             passwd = registro_usuario[usuario]
@@ -94,38 +94,46 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                     autenticacion.update(bytes(self.nonce, 'utf-8'))
                     autenticacion.digest
                     if hash_recibido == autenticacion.hexdigest():
-                        self.wfile.write(b"USUARIO REGISTRADO")
-                        line = " USUARIO REGISTRADO"
-                        log("Send to " + str(self.client_address[0]) + ":" +
-                            str(self.client_address[1]) + " " + line)
+                        if line_conten[3].split(":")[-1] == "0":
+                            line = "SIP/2.0 200 OK ELIMINANDO USUARIO"
+                            self.wfile.write(b"SIP/2.0 200 OK ELIMINADO")
+                            log("Send to " + str(self.client_address[0]) + ":"
+                                + str(self.client_address[1]) + " " + line)
+                            print("USUARIO ELIMINADO")
+                        else:
+                            self.wfile.write(b"SIP/2.0 200 OK REGISTRADO")
+                            line = " USUARIO REGISTRADO"
+                            log("Send to " + str(self.client_address[0]) + ":"
+                                + str(self.client_address[1]) + " " + line)
 
-                        usuario = line_conten[1].split(":")[1]
-                        ip = IP
-                        puerto = line_conten[1].split(":")[-1]
-                        fecha = time.strftime("%Y%m%d%H%M%S",
-                                              time.localtime(time.time()))
-                        expires = line_conten[3].split(":")[-1]
+                            usuario = line_conten[1].split(":")[1]
+                            ip = IP
+                            puerto = line_conten[1].split(":")[-1]
+                            fecha = time.strftime("%Y%m%d%H%M%S",
+                                                  time.localtime(time.time()))
+                            expires = line_conten[3].split(":")[-1]
 
-                        datosusuarios = {"usuario": usuario, "ip": ip,
-                                         "puerto": puerto, "fecha": fecha,
-                                         "expires": expires}
-                        self.listadatos.append([datosusuarios])
-                        with open("./listadatos.txt", 'a') as ficherodatos:
-                            ficherodatos.write(str(datosusuarios))
-                        print("USUARIO REGISTRADO")
+                            datosusuarios = {"usuario": usuario, "ip": ip,
+                                             "puerto": puerto, "fecha": fecha,
+                                             "expires": expires}
+                            self.listadatos.append([datosusuarios])
+                            with open("./listadatos.txt", 'a') as ficherodatos:
+                                ficherodatos.write(str(datosusuarios))
+                            print("USUARIO REGISTRADO")
                     else:
                         self.nonce = str(random.randint(0,
                                                         999999999999999999999))
                         self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                          b"WWW Authenticate: Digest nonce= " +
                                          b'"' + bytes(self.nonce, 'utf-8') +
-                                         b'"')
+                                         b'"' + b"\r\n\r\n")
             else:
                 line = "SIP/2.0 401 Unauthorized WWWAuthenticate:Digest nonce="
                 if len(line_conten) != 7:
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                      b"WWW Authenticate: Digest nonce= " + b'"'
-                                     + bytes(self.nonce, 'utf-8') + b'"')
+                                     + bytes(self.nonce, 'utf-8') + b'"' +
+                                     b"\r\n\r\n")
                     log("Send to " + str(self.client_address[0]) + ":" +
                         str(self.client_address[1]) + " " + line + self.nonce)
 
